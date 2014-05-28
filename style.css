@@ -1,0 +1,25 @@
+header {
+   margin-bottom: 50px;
+   margin-left: 30px;
+}
+
+.attended {
+   float:right;
+   width: 190px;
+   height:100px;
+   /*margin-top:-4px;*/
+   font-size: 2em;
+}
+
+#main {
+   margin-left: 30px;
+   margin-right: 30px;
+}
+
+.name {
+   font-size: 4em;
+}
+
+#title {
+   font-size: 4.5em;
+}
