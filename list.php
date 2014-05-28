@@ -70,7 +70,7 @@ while ($row = mysqli_fetch_array($result)) {
    // Print attendant row
    echo "<div class='row'>\n";
    echo "<div class='well'>\n";
-   echo "<button id='$name_marker' type='button' class='attended btn btn-default btn-lg $btn_color'>Attended</button>\n";
+   echo "<button id='$name_marker' type='button' class='attended btn btn-default btn-lg $btn_color'>" . $row['status'] . "</button>\n";
    echo "<h1 class='name'>" . $row['name'] . "</h1>\n";
    echo "</div>\n";
    echo "</div>\n";
