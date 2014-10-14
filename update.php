@@ -1,30 +1,27 @@
 <?php
-// I'm not sure if this is the best way to read JSON data from posts, but I was
-// having trouble with $_POST
+/**
+ * update.php - Update an attendee's status in the database.
+ */
 
 $log_file = '/tmp/my.log';
 
 // Load configuration
-$config = json_decode(file_get_contents('config.json'));
+$config = json_decode(file_get_contents('config.json'), /* assoc */ true);
+extract($config);
+
 // Grab JSON data from post
 $name = file_get_contents('php://input');
+
 // Establish DB Connection
-$con = mysqli_connect($config->{'db_host'}, $config->{'db_user'},
- $config->{'db_password'}, $config->{'db_name'});
+$db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_password);
 
-if (mysqli_connect_errno($con)) {
-   error_log(mysqli_connect_error, 3, $log_file);
-}
+$query = <<<EOT
+   UPDATE ? SET attended = TRUE
+   WHERE name = ?;
+EOT;
 
-// Sanitize input
-$cleaned_name = mysqli_real_escape_string($con, $name);
-$db_table = $config->{'db_table'};
-
-$result = mysqli_query($con, <<<EOT
-   UPDATE $db_table SET attended = TRUE
-   WHERE name = '$cleaned_name';
-EOT
-);
+$statement = $db->prepare($query);
+$result = $statement->execute([$db_table, $name]);
 
 // If error, log it
 if (!$result) {

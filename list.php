@@ -1,10 +1,11 @@
 <?php
 
-// Print all guests who have not been marked as 'Here'
-// Filter is for filtering types of invites, none is going
+/**
+ * list.php - Print all guests who have not been marked as 'Here'
+ */
 
 $config_file = file_get_contents('config.json');
-$config = json_decode($config_file);
+$config = json_decode($config_file, /* assoc */ true);
 
 // Use cookies to check if user has permissions
 // (not ideal, but fine if guests aren't familiar with cookies.)
@@ -22,56 +23,51 @@ if (isset($cookie)) {
    return;
 }
 
+extract($config);
+
 // Connect to MySQL database
-$con = mysqli_connect($config->{'db_host'}, $config->{'db_user'},
- $config->{'db_password'}, $config->{'db_name'});
-
-if (mysqli_connect_errno($con)) {
-   echo "Failed to connect to MySQL: " . mysqli_connect_error();
-}
-
-$db_table = $config->{'db_table'};
+$db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_password);
 
 // If query parameter all is set, then include those we are 'Invited'
 if ($all) {
-   $result = mysqli_query($con, <<<EOT
-      SELECT name, status FROM $db_table
+   $query = <<<EOT
+      SELECT name, status FROM ?
       WHERE attended = FALSE
       ORDER BY status, name;
-EOT
-   );
-
+EOT;
 } else {
-   $result = mysqli_query($con, <<<EOT
-      SELECT name, status FROM $db_table
+   $query = <<<EOT
+      SELECT name, status FROM ?
       WHERE attended = FALSE AND status != 'Invited'
       ORDER BY status, name;
-EOT
-   );
+EOT;
 }
 
+$people = $db->prepare($query);
 
 // List all attendants
-while ($row = mysqli_fetch_array($result)) {
-   // Replace all spaces with underscores
-   $name_marker = str_replace(' ', '_', $row['name']);
-   $btn_color = 'btn-success';
+if ($people->execute([$db_table])) {
+   while ($row = $people->fetch()) {
+      // Replace all spaces with underscores
+      $name_marker = str_replace(' ', '_', $row['name']);
+      $btn_color = 'btn-success';
 
-   // Assign button color depending on invite status
-   // Green    -> Going
-   // Yellow   -> Maybe
-   // Red      -> Invited
-   if ($row['status'] == 'Maybe') {
-      $btn_color = 'btn-warning';
-   } else if ($row['status'] == 'Invited') {
-      $btn_color = 'btn-danger';
+      // Assign button color depending on invite status
+      // Green    -> Going
+      // Yellow   -> Maybe
+      // Red      -> Invited
+      if ($row['status'] == 'Maybe') {
+         $btn_color = 'btn-warning';
+      } else if ($row['status'] == 'Invited') {
+         $btn_color = 'btn-danger';
+      }
+
+      // Print attendant row
+      echo "<div class='row'>\n";
+      echo "<div class='well'>\n";
+      echo "<button id='$name_marker' type='button' class='attended btn btn-default btn-lg $btn_color'>" . $row['status'] . "</button>\n";
+      echo "<h1 class='name'>" . $row['name'] . "</h1>\n";
+      echo "</div>\n";
+      echo "</div>\n";
    }
-
-   // Print attendant row
-   echo "<div class='row'>\n";
-   echo "<div class='well'>\n";
-   echo "<button id='$name_marker' type='button' class='attended btn btn-default btn-lg $btn_color'>" . $row['status'] . "</button>\n";
-   echo "<h1 class='name'>" . $row['name'] . "</h1>\n";
-   echo "</div>\n";
-   echo "</div>\n";
 }
