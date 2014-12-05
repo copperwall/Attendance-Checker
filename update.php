@@ -7,13 +7,14 @@ $log_file = '/tmp/my.log';
 
 // Load configuration
 $config = json_decode(file_get_contents('config.json'), /* assoc */ true);
-extract($config);
+$db_config = $config['db'];
 
 // Grab JSON data from post
 $name = file_get_contents('php://input');
 
 // Establish DB Connection
-$db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_password);
+$db = new PDO("mysql:host={$db_config['host']};dbname={$db_config['name']}",
+ $db_config['user'], $db_config['password']);
 
 $query = <<<EOT
    UPDATE ? SET attended = TRUE
@@ -21,7 +22,7 @@ $query = <<<EOT
 EOT;
 
 $statement = $db->prepare($query);
-$result = $statement->execute([$db_table, $name]);
+$result = $statement->execute([$db_config['table'], $name]);
 
 // If error, log it
 if (!$result) {

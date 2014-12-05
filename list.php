@@ -6,6 +6,7 @@
 
 $config_file = file_get_contents('config.json');
 $config = json_decode($config_file, /* assoc */ true);
+$db_config = $config['db'];
 
 // Use cookies to check if user has permissions
 // (not ideal, but fine if guests aren't familiar with cookies.)
@@ -23,10 +24,9 @@ if (isset($cookie)) {
    return;
 }
 
-extract($config);
-
 // Connect to MySQL database
-$db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_password);
+$db = new PDO("mysql:host={$db_config['host']};dbname={$db_config['name']}",
+ $db_config['user'], $db_config['password']);
 
 // If query parameter all is set, then include those we are 'Invited'
 if ($all) {
@@ -46,7 +46,7 @@ EOT;
 $people = $db->prepare($query);
 
 // List all attendants
-if ($people->execute([$db_table])) {
+if ($people->execute([$db_config['table']])) {
    while ($row = $people->fetch()) {
       // Replace all spaces with underscores
       $name_marker = str_replace(' ', '_', $row['name']);

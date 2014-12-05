@@ -1,0 +1,10 @@
+{
+   "event_name": "",
+   "db": {
+      "host" : "",
+      "user" : "",
+      "password" : "",
+      "name" : "",
+      "table" : ""
+   }
+}
