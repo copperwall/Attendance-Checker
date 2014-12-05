@@ -13,6 +13,6 @@
       <?include('list.php')?>
    </div>
    <script src='http://code.jquery.com/jquery-2.1.1.min.js'></script>
-   <script src='ajax.js'></script>
+   <script src='app.js'></script>
 </body>
 </html>
